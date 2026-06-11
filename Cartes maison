@@ -1,0 +1,116 @@
+views:
+  - type: sections
+    sections:
+      - type: grid
+        cards:
+          - show_name: true
+            show_icon: false
+            show_state: true
+            type: glance
+            title: ⚽ Coupe du Monde 2026 — Résumé
+            columns: 3
+            entities:
+              - entity: sensor.equipes_restantes
+                name: Restantes
+              - entity: sensor.equipes_eliminees
+                name: Éliminées
+              - entity: sensor.equipes_invaincues
+                name: Invaincues
+              - entity: sensor.jours_avant_la_finale
+                name: Jours → finale
+              - entity: sensor.compte_a_rebours
+                name: Prochain match
+              - entity: sensor.dernier_resultat
+                name: Dernier résultat
+      - type: grid
+        cards:
+          - type: entities
+            title: Statistiques de buts
+            icon: mdi:soccer
+            entities:
+              - entity: sensor.buts_en_direct
+                name: Buts en direct
+              - entity: sensor.buts_par_match
+                name: Buts par match
+              - entity: sensor.buts_sur_penalty
+                name: Buts sur penalty
+              - entity: sensor.buts_en_premiere_mi_temps
+                name: Buts 1re mi-temps
+              - entity: sensor.buts_en_seconde_mi_temps
+                name: Buts 2e mi-temps
+              - entity: sensor.contributions_aux_buts
+                name: Contributions aux buts
+              - entity: sensor.clean_sheets
+                name: Clean sheets
+          - type: markdown
+            content: |
+              ## 🔴 Buts en direct
+              {% set s = states('sensor.buts_en_direct') %}
+              {% if s not in ['unknown','unavailable','None',''] %}
+              **{{ s }}**
+              {% else %}
+              Pas de but en direct pour le moment.
+              {% endif %}
+      - type: grid
+        cards:
+          - show_name: true
+            show_icon: false
+            show_state: true
+            type: glance
+            title: Équipes
+            columns: 2
+            entities:
+              - entity: sensor.equipe_la_plus_prolifique
+                name: La plus prolifique
+              - entity: sensor.equipes_invaincues
+                name: Invaincues
+              - entity: sensor.equipes_restantes
+                name: Restantes
+              - entity: sensor.equipes_eliminees
+                name: Éliminées
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: entity
+                entity: sensor.compte_a_rebours
+                name: Compte à rebours
+                icon: mdi:timer-outline
+              - type: entity
+                entity: sensor.dernier_resultat
+                name: Dernier résultat
+                icon: mdi:scoreboard
+              - type: entity
+                entity: sensor.equipes_restantes
+                name: Équipes restantes
+                icon: mdi:account-group
+              - type: entity
+                entity: sensor.buts_par_match
+                name: Buts / match
+                icon: mdi:soccer
+          - type: markdown
+            content: >
+              {%- set codes = {
+                'argentina':'ar','australia':'au','austria':'at','belgium':'be','brazil':'br','canada':'ca',
+                'colombia':'co','costa rica':'cr','croatia':'hr','czechia':'cz','denmark':'dk','ecuador':'ec',
+                'egypt':'eg','england':'gb-eng','france':'fr','germany':'de','ghana':'gh','iran':'ir','italy':'it',
+                'ivory coast':'ci','jamaica':'jm','japan':'jp','south korea':'kr','korea republic':'kr','mexico':'mx',
+                'morocco':'ma','netherlands':'nl','new zealand':'nz','nigeria':'ng','norway':'no','panama':'pa',
+                'paraguay':'py','poland':'pl','portugal':'pt','qatar':'qa','saudi arabia':'sa','scotland':'gb-sct',
+                'senegal':'sn','serbia':'rs','south africa':'za','spain':'es','sweden':'se','switzerland':'ch',
+                'tunisia':'tn','turkey':'tr','ukraine':'ua','uruguay':'uy','united states':'us','usa':'us',
+                'wales':'gb-wls','algeria':'dz','cape verde':'cv','dr congo':'cd','cameroon':'cm','mali':'ml',
+                'burkina faso':'bf','uzbekistan':'uz','jordan':'jo','iraq':'iq','united arab emirates':'ae','uae':'ae',
+                'oman':'om','china':'cn','bolivia':'bo','venezuela':'ve','peru':'pe','chile':'cl','el salvador':'sv',
+                'trinidad and tobago':'tt','guatemala':'gt','ireland':'ie','romania':'ro','slovakia':'sk',
+                'slovenia':'si','albania':'al','greece':'gr','georgia':'ge','hungary':'hu'
+              } %} {%- macro flag(name) -%}
+                {%- set c = codes.get((name|string|lower|trim), '') -%}
+                {%- if c -%}<img src="https://flagcdn.com/w40/{{ c }}.png" height="14" style="vertical-align:middle;border-radius:2px;margin:0 4px;">
+                {%- else -%}🏳️ {%- endif -%}
+              {%- endmacro -%} ## 📅  {% set ns = namespace(n=0) %} {% for m in
+              state_attr('sensor.calendrier','matches') or [] -%} {%- if
+              m.status in ['SCHEDULED','TIMED'] and ns.n < 6 -%} {%- set ns.n =
+              ns.n + 1 %} {{ as_timestamp(m.utcDate) | timestamp_custom('%d/%m
+              %H:%M') }} — {{ flag(m.home) }} {{ m.home }} vs {{ m.away }} {{
+              flag(m.away) }} {% endif -%} {% endfor %}
